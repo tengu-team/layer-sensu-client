@@ -1,0 +1,12 @@
+name: sensu-client
+summary: This Charm sets up a Sensu client and ,by default, monitors cpu-load, memory and disk.
+maintainer: Mathijs Moerman <mathijs.moerman@tengu.io>
+description: |
+tags:
+  - monitoring
+subordinate: true
+requires:
+  info:
+    interface: juju-info
+    scope: container
+series: [ 'xenial' ]

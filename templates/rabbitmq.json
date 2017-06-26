@@ -1,0 +1,16 @@
+{
+  "rabbitmq": {
+    "host": "{{host}}",
+    "port": {{port}},
+    "vhost": "/sensu",
+    "user": "sensu",
+    "password": "{{password}}",
+    "heartbeat": 30,
+    "prefetch": 50
+    {%- if ssl_cert %},
+    "ssl": {
+      "cert_chain_file": "{{ssl_cert}}",
+      "private_key_file": "{{ssl_key}}"
+    }{% endif %}
+  }
+}
