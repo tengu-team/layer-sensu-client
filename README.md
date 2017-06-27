@@ -22,6 +22,7 @@ Sensu client is configured that a measurement will return the modelname, machine
 # Remarks
 Only one Sensu-base is needed to monitor all the services in a controller. The sensu-client just need the private ip, port and ssl-data of the RabbitMQ. For now this is given through config options, but when cross-model relations become available, this should be rewritten using a relation.
 
+
 # Bugs
 Report bugs on <a href="https://github.com/Qrama/monitoring-api/issues">Github</a>
 
