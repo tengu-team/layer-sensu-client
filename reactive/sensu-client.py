@@ -16,7 +16,7 @@
 # pylint: disable=c0111,c0103,c0301
 import os
 import shutil
-from subprocess import call, CalledProcessError
+from subprocess import check_call, CalledProcessError
 from charmhelpers.core.templating import render
 from charmhelpers.core.hookenv import local_unit, status_set, config, open_port, application_version_set, unit_public_ip
 from charmhelpers.core.host import service_restart
@@ -31,16 +31,16 @@ SSL_DIR = '/etc/sensu/ssl'
 @when_not('sensu.installed')
 def setup_sensu(info):
     application_version_set('0.29')
-    if not os.path.isdir(SSL_DIR):
-        os.mkdir(SSL_DIR)
-    with open('{}/ssl_key.pem'.format(SSL_DIR), 'w+') as ssl_key:
-        ssl_key.write(config()['ssl_key'])
-    with open('{}/ssl_cert.pem'.format(SSL_DIR), 'w+') as ssl_cert:
-        ssl_cert.write(config()['ssl_cert'])
     rabbitmq = {'host': config()['rabbitmq'].split(':')[0],
                 'port': config()['rabbitmq'].split(':')[1],
                 'password': config()['password']}
-    if rabbitmq['port'] != '5672':
+    if config()['ssl_key'] != '':
+        if not os.path.isdir(SSL_DIR):
+            os.mkdir(SSL_DIR)
+        with open('{}/ssl_key.pem'.format(SSL_DIR), 'w+') as ssl_key:
+            ssl_key.write(config()['ssl_key'])
+        with open('{}/ssl_cert.pem'.format(SSL_DIR), 'w+') as ssl_cert:
+            ssl_cert.write(config()['ssl_cert'])
         rabbitmq['ssl_cert'] = '{}/ssl_cert.pem'.format(SSL_DIR)
         rabbitmq['ssl_key'] = '{}/ssl_key.pem'.format(SSL_DIR)
     name = '{}/{}'.format(os.environ['JUJU_MODEL_NAME'], os.environ['JUJU_MACHINE_ID'])
@@ -50,23 +50,31 @@ def setup_sensu(info):
     client = {'name': name, 'public_ip': unit_public_ip(), 'subscriptions': '[\"monitoring\"]'}
     render('client.json', '{}/client.json'.format(CONFIG_DIR), context=client)
     render('transport.json', '{}/transport.json'.format(CONFIG_DIR), context={})
-    call(['/opt/sensu/embedded/bin/gem', 'install', 'sensu-plugin', '--version', '\'=1.2.0\''])
     for plugin in config()['plugins'].split(' '):
-        call(['sensu-install', '-p', plugin])
+        try:
+            check_call(['sensu-install', '-p', plugin])
+        except CalledProcessError as e:
+            status_set('blocked', e.output)
     if not os.path.isdir(os.path.join(CONFIG_DIR, unit)):
         os.mkdir(os.path.join(CONFIG_DIR, unit))
-    checks = [{'type': m.split('|')[0],
-               'script': m.split('|')[1],
-               'subscribers': application}
-              for m in config()['measurements'].split(' ')]
-    render('checks.json', '{}/{}/checks.json'.format(CONFIG_DIR, unit), context={'checks': checks})
+    measurements = config()['measurements'].split(' ')
     try:
-        open_port(3030)
-    except CalledProcessError:
-        pass
-    service_restart('sensu-client')
-    status_set('active', 'Sensu-client is active')
-    set_state('sensu.installed')
+        checks = [
+            {'type': m.split('|')[0], 'script': m.split('|')[1], 'subscribers': application} for m in measurements
+        ]
+        render('checks.json', '{}/{}/checks.json'.format(CONFIG_DIR, unit), context={'checks': checks})
+        # When multiple sensu-clients are being used to monitor different sets of measurements,
+        # open port would fail. Downside of this check is that juju status will not provide correct
+        # info about open ports, except for the first Sensu client.
+        try:
+            open_port(3030)
+        except CalledProcessError:
+            pass
+        service_restart('sensu-client')
+        status_set('active', 'active (ready)')
+        set_state('sensu.installed')
+    except IndexError:
+        status_set('blocked', 'Incorrect checks given in config')
 
 
 @when('sensu.installed')

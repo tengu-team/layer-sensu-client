@@ -1,5 +1,5 @@
 includes: ['layer:basic', 'layer:apt', 'layer:metrics', 'interface:juju-info']
-repo: git@github.com:Qrama/layer-sensu-client.git
+repo: git@github.com:tengu-team/layer-sensu-client.git
 options:
   apt:
     packages:
