@@ -1,0 +1,16 @@
+{
+  "checks": {
+    {%- for check in checks %}
+    "{{check.type}}": {
+      "command": "{{check.script}}",
+      "standalone": true,
+      "interval": 5,
+      "type": "metric",
+      "subscribers": ["{{check.subscribers}}"]
+    }
+    {%- if not loop.last -%}
+      ,
+    {%- endif -%}
+    {%- endfor %}
+  }
+}

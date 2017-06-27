@@ -1,0 +1,58 @@
+options:
+  rabbitmq:
+    type: string
+    default: '104.199.57.48:5672'
+    description: |
+      URL and port on which the public rabbitmq is available
+  password:
+    type: string
+    default: 'secret'
+    description: |
+      Password for the sensu user for the /sensu vhost
+  ssl_key:
+    type: string
+    default: ''
+    description: |
+      private unencrypted key in base64 PEM format (starts "-----BEGIN RSA PRIVATE KEY-----")
+  ssl_cert:
+    type: string
+    default: ''
+    description: |
+      X.509 certificate in base64 PEM format (starts "-----BEGIN CERTIFICATE-----")
+  install_sources:
+    type: string
+    default: |
+      - deb https://sensu.global.ssl.fastly.net/apt xenial main
+  install_keys:
+    type: string
+    default: |
+      - |
+        -----BEGIN PGP PUBLIC KEY BLOCK-----
+        Version: GnuPG v1
+
+        mQENBFXknLQBCADOXh2TH9LA4qeKHf8vOHZHwJrjNZKsVKttlElghhq2ZKX1Fwjz
+        EZL01ncTxqlhfYLKpp57JOcmlZfH5F6ahXaoPzwN87jPOs3XWoilwwML7+65JfRI
+        nBiFnBsmcXtRJLz4I8T4Nczgk8VtzPm5tkXxkA25bfAspwzLLeV4Ls9Q/gQglyYy
+        48E1PYKo026wCqUDEzT39HuTo8di7o+5EEMyp2n1xrD0GYI8xTvjHKlDE3rkfDlD
+        9IZ4KDfPISVQU9G4kQ+QFei/MQOf2y+Rpuzq5rQ9sorGHsdmkVdtzsusZIaGsd56
+        WcTMgS83MYkuvTeIYYwXtuTFTiidWmtcZca1ABEBAAG0HEZyZWlnaHQgPHN1cHBv
+        cnRAaHctb3BzLmNvbT6JATgEEwECACIFAlXknLQCGy8GCwkIBwMCBhUIAgkKCwQW
+        AgMBAh4BAheAAAoJEKIPJZrrnJS7VNcH/3SBreXjnC6pzCHjy787ex7kUVmkULhz
+        kLZBgCHBMFVL1oSZcgomNuEhYzLfiHRQ+Ny/yMduTELORoKmb2dTHmXWdqpbl9Br
+        +brsJCblDpdnhUTXxVqXBQUA/WRqi9WhDXchcU0ZkKfmFN74kC3A4wCYKQkqPOCR
+        koyAjB+AkDWecC4+P1tPGtpSXApkNVP1KTGPzkWT3IGVmfFBoVnKIJmIgJhhHArd
+        P6EiarPP3/Zwpn25kXcBBsHubK8EerKB9ppsRxUiZTIeaOnVeQOHbZ40g8QRY+M1
+        YlDGDBPJYvWGezEwaeYuNmOVh+QTYLyv4BA9XafRnHvryLFJR0hW+Pg=
+        =hhqa
+        -----END PGP PUBLIC KEY BLOCK-----
+  plugins:
+    type: string
+    description: |
+      Space separated list of plugins that need to be installed
+    default: "sensu-plugins-load-checks sensu-plugins-memory-checks sensu-plugins-disk-checks"
+  measurements:
+    type: string
+    description: |
+      Space separated list of measurements and scripts, which in their turn are given
+      as a pair, separated with a |
+    default: "cpu_load|check-load.rb memory|metrics-memory.rb disk|metrics-disk-usage.rb"
